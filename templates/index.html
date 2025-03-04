@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wellness Buddy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 500px;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0db91b;
+            margin-bottom: 20px;
+        }
+
+        #chat-log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f0fff0; /* Very light green */
+            border-radius: 4px;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #user-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        #send-button {
+            padding: 8px 15px;
+            background-color: #07823f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: fit-content;
+        }
+
+        #send-button:hover {
+            background-color: #0056b3;
+        }
+
+        .chat-message {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .chat-message.user {
+            background-color: #e6f7ff;
+            text-align: right;
+        }
+
+        .chat-message.bot {
+            background-color: #f0f0f0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wellness Buddy</h1>
+        <div id="chat-log">
+            {% if greeting %}
+                <p class="chat-message bot"><strong>Chatbot:</strong> {{ greeting }}<br><strong>Chatbot:</strong> How can I help you today?</p>
+            {% else %}
+                <p class="chat-message bot"><strong>Chatbot:</strong> How can I help you today?</p>
+            {% endif %}
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatLog = document.getElementById("chat-log");
+        const userInput = document.getElementById("user-input");
+        const sendButton = document.getElementById("send-button");
+
+        sendButton.addEventListener("click", () => {
+            const message = userInput.value;
+            chatLog.innerHTML += `<p class="chat-message user"><strong>You:</strong> ${message}</p>`;
+            userInput.value = "";
+
+            fetch("/get_response", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `user_input=${encodeURIComponent(message)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatLog.innerHTML += `<p class="chat-message bot"><strong>Chatbot:</strong> ${data.bot_response}</p>`;
+                chatLog.scrollTop = chatLog.scrollHeight;
+            });
+        });
+
+        userInput.addEventListener("keyup", function(event) {
+          if (event.keyCode === 13) {
+            event.preventDefault();
+            sendButton.click();
+          }
+        });
+    </script>
+</body>
+</html>
